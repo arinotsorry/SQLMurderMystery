@@ -1,0 +1,69 @@
+//// This is the text I used to create the schema diagram
+//// I used https://dbdiagram.io/
+
+Table get_fit_now_check_in {
+  membership_id text
+  check_in_date int
+  check_in_time int
+  check_out_time int
+}
+
+Table interview{
+  person_id int
+  transcript text
+}
+
+Table get_fit_now_member{
+  id text [pk]
+  person_id int
+  name text
+  membership_start_date int
+  membership_status text
+}
+
+Table facebook_event_checkin{
+  person_id int
+  event_id int
+  event_name text
+  date int
+}
+
+Table crime_scene_report{
+  date int
+  type text
+  description text
+  city text
+}
+
+Table person{
+  id int [pk]
+  name text
+  license_id int
+  address_number int
+  address_street_name text
+  ssn char
+}
+
+Table drivers_license{
+  id int [pk]
+  age int
+  height int
+  eye_color text
+  hair_color text
+  gender text
+  plate_number text
+  car_make text
+  car_model text
+}
+
+Table income{
+  ssn char [pk]
+  annual_income int
+}
+
+Ref: get_fit_now_check_in.membership_id > get_fit_now_member.id
+Ref: interview.person_id > person.id
+Ref: get_fit_now_member.person_id > person.id
+Ref: facebook_event_checkin.person_id > person.id
+Ref: person.license_id > drivers_license.id
+Ref: person.ssn > income.ssn
