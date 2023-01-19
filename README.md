@@ -392,9 +392,37 @@ SELECT name, COUNT(*) AS times_attended
 ```
                                       
   </details>
-  </details>
-  
-<br>
-  
 
+  <details>
+    <summary>Combined Statement</summary>
+    
+<br>
+    
+```sql
+SELECT DISTINCT name
+	FROM facebook_event_checkin JOIN person ON person_id = person.id
+  	  JOIN drivers_license ON license_id = drivers_license.id
+	WHERE (height >= 65 AND height <= 67)
+  	  AND hair_color = 'red'
+  	  AND car_make = 'Tesla'
+  	  AND car_model = 'Model S'
+     AND (
+   	 SELECT COUNT(*) AS times_attended
+   	 FROM facebook_event_checkin JOIN person ON person_id = id
+   	 WHERE event_name = 'SQL Symphony Concert'
+   		 AND date/100 = 201712
+   	 GROUP BY name
+   	 ORDER BY times_attended DESC
+   	) = 3
+```
+  </details>
+    
+<details>
+  <br>
+  <summary>There is only one person who matches that description...</summary>
   
+# Miranda Priestly.
+  <br>
+  Usually, the devil wears Prada, but today the devil wears an orange jumpsuit and a pair of handcuffs 😎.
+    </details>
+  </details>
