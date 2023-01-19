@@ -258,6 +258,8 @@ SELECT name, membership_id, check_in_time, check_out_time
   
 We know that the murderer has to satisfy the 3 conditions/clues discussed in the previous section for them to have been the killer.
   
+<br>
+  
 <details>
   <summary>SQLite Statement to Find Murderer</summary>
   
@@ -287,16 +289,112 @@ SELECT person.name
                         
   </details>
   
+  <br>
+  
   <details>
     <summary>And the killer is...</summary>
     
 ### Jeremy Bowers!
     
-<br>
     
-### But wait! There's more...
+#### But wait! There's more...
     
 </details>
 </details>
   
----
+-----------------------------------------------------------------------------------------------------
+  
+## Did we find the real bad guy?
+
+<details>
+  <summary>The Killer's Statement</summary>
+  
+<br>
+  
+### The Killer's Statement
+  
+<br>
+  
+  The fine folks at Night Lab hinted that there may be more to uncover, so let's see what Jeremy has to say.
+  
+  We can query the `interview` table for his statement:
+  
+<br>
+  
+<details>
+  <summary>SQLite Query</summary>
+  
+```sql
+SELECT name, transcript
+  FROM interview JOIN person ON person_id = id
+  WHERE (
+    SELECT id
+      FROM person
+      WHERE name = 'Jeremy Bowers'
+  ) = person_id
+```
+
+  </details>
+  
+<br>
+  
+  <details>
+    <summary>What he said</summary>
+    
+<br>
+    
+> I was hired by a woman with a lot of money. 
+> I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). 
+> She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017
+    
+  </details>
+</details>
+  
+<br>
+
+<details>
+  <summary>What we know about the person behind the curtain</summary>
+  
+  1. She's between 5'5 and 5'7
+  2. She has red hair
+  3. She has a Tesla Model S
+  4. She attended the SQL Symphony Concert 3 times in December 2017
+  
+  We can find <sup>#</sup>1-3 in the `drivers_license` table and <sup>#</sup>4 in the `facebook_events` table.
+  
+<details>
+  <summary>SQLite for Driver's License Info</summary>
+  <br>
+  
+```sql
+SELECT name	
+  FROM person JOIN drivers_license ON license_id = drivers_license.id
+  WHERE (height >= 65 AND height <= 67)
+    AND hair_color = 'red'
+    AND car_make = 'Tesla'
+    AND car_model = 'Model S'
+```
+  
+  </details>
+<details>
+  <br>
+  To find out who attended the SQL Symphony Concert 3 times in December 2017, we need to divide the date (yyyymmdd) by 100, to get just the year and month. Then, we have to group by name and return the count of how many concerts they attended.
+  <br>
+  <summary>SQLite for finding who attended 3 Symphony Concerts</summary>
+  <br>
+  
+```sql
+SELECT name, COUNT(*) AS times_attended
+  FROM facebook_event_checkin JOIN person ON person_id = id
+  WHERE event_name = 'SQL Symphony Concert' AND date/100 = 201712
+  GROUP BY name
+  ORDER BY times_attended DESC
+```
+                                      
+  </details>
+  </details>
+  
+<br>
+  
+
+  
