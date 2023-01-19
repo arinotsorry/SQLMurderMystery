@@ -143,4 +143,160 @@ From the second witness, Annabel Miller, we learned:
 
 ----
   
+<br>
+
+## Clues From Interviews
+
+### Clue <sup>#</sup>1
+<details>
+  <summary>Details about First Clue</summary>
   
+  <br>
+  
+  ### Gym membership number starts with '48Z'
+  
+  <br>
+  
+  We need to get the membership IDs (or names, for readability) of people whose gym membership numbers begin with '48Z'
+  
+  <br>
+  
+<details>
+  <summary>SQLite for getting names with appropriate membership IDs</summary>
+  
+```sql
+SELECT DISTINCT name
+  FROM get_fit_now_member JOIN get_fit_now_check_in ON id = membership_id
+  WHERE id LIKE '48Z%'
+```
+  
+  </details>
+</details>
+<br>
+
+### Clue <sup>#</sup>2
+<details>
+  <summary>Details about Second Clue</summary>
+  
+  <br>
+  
+  ### Car's license plate includes 'H42W'
+  
+  <br>
+  
+  We need to get the names of people whose license plate includes 'H42W'
+  
+  <br>
+  
+<details>
+  <summary>SQLite for getting names associated with matching license plates</summary>
+  
+```sql
+SELECT name, plate_number
+  FROM person LEFT JOIN drivers_license ON person.license_id = drivers_license.id
+  WHERE plate_number LIKE '%H42W%'
+```
+  
+  </details>
+</details>
+<br>
+
+### Clue <sup>#</sup>3
+<details>
+  <summary>Details about Third Clue</summary>
+  
+  <br>
+  
+  ### Saw Annabel at the gym
+  
+  <br>
+  
+  We need to get the names of people whose time at the gym overlapped with Annabel's time there on January 9<sub>th</sub>, 2018.
+  
+  If we consider how many different ways someone can encounter Annabel at the gym:
+  - arriving before Annabel arrives, leaving after she leaves (suspect's time there encapsulates hers)
+  - arriving before Annabel arrives, leaving before she leaves (but after she's arrived) (Annabel sees suspect arrive and leave)
+  - arriving after Annabel arrives, leaving before she leaves (Annabel sees suspect leave or end of their workout)
+  - arriving after Annabel arrives, leaving after she leaves (Annabel sees suspect arrive or beginning of their workout)
+  <br>
+  
+  These are kind of annoying to check for and have a lot of repetition, though. However, we can consider the scenarios where Annabel won't see the a gym-goer:  
+
+  - if they leave before Annabel arrives
+  - if they arrive after Annabel leaves
+  
+  
+  <br>
+  
+<details>
+  <summary>SQLite for getting names of people who overlapped with Annabel's gym time</summary>
+  
+```sql
+SELECT name, membership_id, check_in_time, check_out_time
+  FROM get_fit_now_check_in JOIN get_fit_now_member ON membership_id = id
+  WHERE check_in_date = 20180109 AND NOT ( 
+    check_in_time > (
+      SELECT check_out_time
+        FROM get_fit_now_check_in JOIN get_fit_now_member ON membership_id = id
+        WHERE check_in_date = 20180109 AND name = 'Annabel Miller'
+    ) OR check_out_time < (
+      SELECT check_in_time
+        FROM get_fit_now_check_in JOIN get_fit_now_member ON membership_id = id
+        WHERE check_in_date = 20180109 AND name = 'Annabel Miller'
+    ))
+```
+                           
+  </details>
+</details>
+<br>
+
+## Finding Overlap of All the Clues
+<details>
+  <summary>Who's the Murderer?</summary>
+  
+<br>
+  
+We know that the murderer has to satisfy the 3 conditions/clues discussed in the previous section for them to have been the killer.
+  
+<details>
+  <summary>SQLite Statement to Find Murderer</summary>
+  
+```sql
+SELECT person.name
+  FROM get_fit_now_check_in
+    JOIN get_fit_now_member ON membership_id = get_fit_now_member.id
+    LEFT JOIN person ON person_id = person.id
+    LEFT JOIN drivers_license ON license_id = drivers_license.id
+  WHERE membership_id LIKE '48Z%'
+    AND plate_number LIKE '%H42W%'
+    AND check_in_date = 20180109
+    AND NOT (
+      check_in_time > (
+        SELECT check_out_time
+          FROM get_fit_now_check_in JOIN get_fit_now_member ON membership_id = id
+          WHERE check_in_date = 20180109 AND get_fit_now_member.name = 'Annabel Miller'
+      )
+    OR
+      check_out_time < (
+        SELECT check_in_time
+          FROM get_fit_now_check_in JOIN get_fit_now_member ON membership_id = id
+          WHERE check_in_date = 20180109 AND get_fit_now_member.name = 'Annabel Miller' 
+       )
+    )
+```
+                        
+  </details>
+  
+  <details>
+    <summary>And the killer is...</summary>
+    
+### Jeremy Bowers!
+    
+<br>
+    
+### But wait! There's more...
+    
+</details>
+</details>
+  
+---
